@@ -15,6 +15,9 @@ import "dotenv/config";
 import { connectDB } from "./config/db.mjs";
 import router from "./auth/auth.routes.mjs";
 import bookingController from "./booking/booking.controller.mjs";
+import fs from "fs";
+import { query } from "./config/db.mjs";
+import { authenticate } from "./auth/auth.middleware.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +30,15 @@ app.use(cors());
 //connect DB
 await connectDB();
 
+//run migration
+const runMigration = async () =>{
+  const sql = fs.readFileSync("./migration/init.sql").toString();
+  await query(sql);
+  console.log("migration completed")
+}
+  
+await runMigration();
+
 app.use("/auth", router);
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
@@ -36,6 +48,6 @@ app.get("/", (req, res) => {
 app.get("/seats", bookingController.getSeats);
 
 //book a seat give the seatId and your name
-app.put("/:id/:name", bookingController.bookSeats);
+app.put("/:id/:name", authenticate, bookingController.bookSeats);
 
 app.listen(port, () => console.log("Server starting on port: " + port));

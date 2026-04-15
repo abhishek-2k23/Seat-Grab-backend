@@ -8,6 +8,8 @@ class bookingController {
     }
 
     static bookSeats = async (req, res) => {
+        console.log(req.params.id, req.params.name)
+        console.log(req.user.id)
         const bookedSeat = await bookingServices.bookSeat(req.params.id, req.params.name, req.user.id);
         ApiResponse.created(res, "Seat booked Successfully", {bookedSeat})
     }
