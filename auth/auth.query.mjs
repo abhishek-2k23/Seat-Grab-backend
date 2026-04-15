@@ -3,3 +3,6 @@ export const CREATE_USER_QUERY = "INSERT INTO users(name, email, password, verif
 export const GET_USER_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email = $1"
 
 export const GET_USER_BY_USERID = "SELECT id, name, email FROM users WHERE id = $1";
+
+export const UPDATE_REFRESH_TOKEN_QUERY = "UPDATE users SET refresh_token = $1 WHERE id = $2";
+

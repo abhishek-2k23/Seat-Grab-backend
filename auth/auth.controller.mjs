@@ -1,5 +1,6 @@
 import * as authService from "./auth.service.mjs";
 import ApiResponse from "../common/utils/api-response.mjs";
+import ApiError from "../common/utils/api-error.mjs";
 const register = async (req, res) => {
   const user = await authService.register(req.body);
   ApiResponse.created(res, "Registration success", user);
@@ -27,4 +28,16 @@ const getMe = async (req, res) => {
   ApiResponse.ok(res, "User Profile", user);
 };
 
-export { register, login, logout, getMe };
+const refreshToken = async (req, res) => {
+  try {
+    const token = req.cookies?.refreshToken;
+    console.log(token)
+    const data = await authService.refresh(token);
+
+    return ApiResponse.ok(res, "Token refreshed", data);
+  } catch (err) {
+    throw ApiError.forbidden("Invalid refresh token");
+  }
+};
+
+export { register, login, logout, getMe, refreshToken };

@@ -1,7 +1,7 @@
 import { query } from "../config/db.mjs";
-import { CREATE_USER_QUERY, GET_USER_BY_EMAIL_QUERY, GET_USER_BY_USERID } from "./auth.query.mjs";
+import { CREATE_USER_QUERY, GET_USER_BY_EMAIL_QUERY, GET_USER_BY_USERID, UPDATE_REFRESH_TOKEN_QUERY } from "./auth.query.mjs";
 import ApiError from "../common/utils/api-error.mjs";
-import { generateAccessToken, generateRefreshToken, generateResetToken, verifyAccessToken } from "../common/utils/jwt.utils.mjs";
+import { generateAccessToken, generateRefreshToken, generateResetToken, verifyAccessToken, verifyRefreshToken } from "../common/utils/jwt.utils.mjs";
 import bcrypt from 'bcrypt';
 import crypto from "node:crypto";
 
@@ -23,26 +23,79 @@ const register = async ({ name, email, password }) => {
   return user.rows[0];
 };
 
-const login = async ({ email, password }) => {
+ const login = async ({ email, password }) => {
+  const result = await query(GET_USER_BY_EMAIL_QUERY, [email]);
 
-  const user = await query(GET_USER_BY_EMAIL_QUERY, [email]);
-  if (!user.rows || user.rows.length === 0) throw ApiError.unauthorized("Invalid Email or password");
+  if (!result.rows || result.rows.length === 0) {
+    throw ApiError.unauthorized("Invalid email or password");
+  }
 
-  const isMatch = await bcrypt.compare(password, user.rows[0].password);
-  if (!isMatch) throw ApiError.unauthorized("Invalid email or password");
-  console.log(user.rows);
-  const accessToken = generateAccessToken({ id: user.rows[0].id });
-  const refreshToken = generateRefreshToken({ id: user.rows[0].id });
+  const user = result.rows[0];
 
-  user.refreshToken = hashToken(refreshToken);
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw ApiError.unauthorized("Invalid email or password");
+  }
 
-  return { user: user.rows[0], accessToken, refreshToken };
+  const accessToken = generateAccessToken({ id: user.id });
+  const refreshToken = generateRefreshToken({ id: user.id });
+
+  const hashedToken = hashToken(refreshToken);
+
+  await query(
+    UPDATE_REFRESH_TOKEN_QUERY,
+    [hashedToken, user.id]
+  );
+
+  delete user.password;
+  delete user.refresh_token;
+
+  return { user, accessToken, refreshToken };
 };
 
-const logout = async (userId) => {
-    const user = await query(GET_USER_BY_USERID,[userId]);
-    if (!user.length) throw ApiError.unauthorized("User not found");
 
+const logout = async (userId) => {
+  const result = await query(
+    "UPDATE users SET refresh_token = NULL WHERE id = $1 RETURNING id",
+    [userId]
+  );
+
+  if (result.rows.length === 0) {
+    throw ApiError.unauthorized("User not found");
+  }
+
+  return { message: "Logged out successfully" };
+};
+
+const refresh = async (refreshToken) => {
+  if (!refreshToken) {
+    throw ApiError.unauthorized("Refresh token missing");
+  }
+  console.log(refreshToken)
+
+  const decoded = verifyRefreshToken(refreshToken);
+
+  const result = await query(
+    "SELECT id, refresh_token FROM users WHERE id = $1",
+    [decoded.id]
+  );
+
+  const user = result.rows[0];
+  if (!user) {
+    throw ApiError.unauthorized("User not found");
+  }
+
+  const hashedToken = hashToken(refreshToken);
+
+  if (user.refresh_token !== hashedToken) {
+    throw ApiError.unauthorized("Invalid refresh token");
+  }
+
+  const newAccessToken = generateAccessToken({
+    id: user.id,
+  });
+
+  return { accessToken: newAccessToken };
 };
 
 const getMe = async (userId) => {
@@ -53,4 +106,5 @@ const getMe = async (userId) => {
 };
 
 
-export { register,login, getMe, logout };
+export { register,login, getMe, logout, refresh};
+  
