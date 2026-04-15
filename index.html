@@ -72,7 +72,8 @@
         const tbl = document.getElementById("tbl");
         const res = await fetch("/seats");
         const resarray = await res.json();
-        const j = resarray.sort((a, b) => a.id - b.id);
+        console.log(resarray);
+        const j = resarray.data.seats.sort((a, b) => a.id - b.id);
         let tr;
         for (let i = 0; i < j.length; i++) {
           if (i % 8 === 0) tr = document.createElement("tr");
@@ -109,7 +110,7 @@
               const name = prompt("Enter your name");
               if (!name) return;
 
-              const res = await fetch(`/${id}/${name}`, { method: "PUT" });
+              const res = await fetch(`/${id}/${name}`, { method: "PUT", headers: { "Content-Type": "application/json", authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc2MjMxMTI0LCJleHAiOjE3NzYyMzIwMjR9.I--1r01PVOaXM7q67Ga8e9IlL8av5eXnkVSPXVNC2rw` } });
               const data = await res.json();
 
               if (data.error) {
