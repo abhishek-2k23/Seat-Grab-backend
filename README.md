@@ -107,7 +107,7 @@ book-my-ticket/
 ### Step 1: Clone or Navigate to Project
 
 ```bash
-cd e:\Cohort26\backend\book-my-ticket
+cd Seat-Grab-backend
 ```
 
 ### Step 2: Install Dependencies
@@ -196,7 +196,7 @@ seats (
 npm run dev
 ```
 
-The server will start on `http://localhost:8080`
+The server will start on `https://seat-grab-backend.onrender.com`
 
 ### Production Mode
 
@@ -207,7 +207,7 @@ node index.mjs
 ### Verify Server is Running
 
 ```bash
-curl http://localhost:8080
+curl https://seat-grab-backend.onrender.com
 ```
 
 You should see the `index.html` response.
@@ -232,24 +232,6 @@ You should see the `index.html` response.
 | `POST` | `/api/booking/book` | Book a seat (requires auth) |
 | `GET` | `/api/booking/my-bookings` | Get user's bookings (requires auth) |
 | `DELETE` | `/api/booking/cancel/:seatId` | Cancel a booking (requires auth) |
-
----
-
-## 🔐 Authentication
-
-### How JWT Works in This App
-
-1. **Registration**: User registers → Password hashed → User stored in DB
-2. **Login**: User credentials verified → JWT tokens generated
-3. **Protected Routes**: Include `Authorization: Bearer <JWT_TOKEN>` header
-4. **Token Refresh**: Use refresh token to get new access token
-
-### Example: Authenticated Request
-
-```bash
-curl -X GET http://localhost:8080/api/booking/my-bookings \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
 
 ---
 
@@ -368,7 +350,7 @@ POST /api/auth/login
 
 **Request:**
 ```json
-POST /api/booking/book
+POST /bookSeat
 Authorization: Bearer <accessToken>
 {
   "seatNumber": "A5"
