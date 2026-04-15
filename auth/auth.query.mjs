@@ -1,4 +1,4 @@
-export const CREATE_USER_QUERY = "INSERT INTO users(name, email, password, verification_token) VALUES($1, $2, $3, $4) RETURNING id, name, email, created_at";
+export const CREATE_USER_QUERY = "INSERT INTO users(name, email, password) VALUES($1, $2, $3) RETURNING id, name, email, created_at";
 
 export const GET_USER_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email = $1"
 

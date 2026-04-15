@@ -13,11 +13,10 @@ const register = async ({ name, email, password }) => {
 
   console.log("Existing: ", existing)
   if (existing.rows.length > 0) throw ApiError.conflict("Email already exisits");
-
-  const { rawToken, hashedToken } = generateResetToken();
+  
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await query(CREATE_USER_QUERY, [name, email, hashedPassword, hashedToken])
+  const user = await query(CREATE_USER_QUERY, [name, email, hashedPassword])
 
   console.log("user: ", user);
   return user.rows[0];
