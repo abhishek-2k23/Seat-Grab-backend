@@ -50,4 +50,7 @@ app.get("/seats", bookingController.getSeats);
 //book a seat give the seatId and your name
 app.put("/:id/:name", authenticate, bookingController.bookSeats);
 
+//reset seats
+app.put("/reset-seats", bookingController.resetSeats);
+
 app.listen(port, () => console.log("Server starting on port: " + port));
